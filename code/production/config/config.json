@@ -1,0 +1,12 @@
+{
+    "file_id": "1JjYmvA8qTPOh_dVAVkvsapP-xtes7F4h",
+    "url": "https://drive.google.com/uc?id=file_id",
+    "output_path": "data/",
+    "output_file": "spotify_songs.csv",
+    "gb_input_features": ["danceability", "energy", "key", "loudness", "mode",
+    "speechiness", "acousticness", "instrumentalness", "liveness",
+    "valence", "tempo", "release_year"],
+    "kmeans_input_features": ["danceability", "energy", "key", "loudness", "mode",
+    "speechiness", "acousticness", "instrumentalness", "liveness",
+    "valence", "tempo","track_artist_label","release_year"]
+}
