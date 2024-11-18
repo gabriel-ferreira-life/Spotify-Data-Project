@@ -26,7 +26,7 @@ def main():
         similar_songs = recommender.recommend_similar_songs(song_name, top_n)
         
         if similar_songs is not None and not similar_songs.empty:
-            print("\nHere are some songs similar to '{}' by '{}':".format(*song_name.split(" - ", 1)))
+            print(f"\nHere are some songs similar to '{song_name}'")
             print(similar_songs.to_string(index=False))
         else:
             print(f"\nNo similar songs found for '{song_name}'. Please try another song.")
