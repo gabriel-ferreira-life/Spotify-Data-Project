@@ -26,7 +26,8 @@ def show_recomendation_page():
     #################################################################################
     # Option 1: Similar songs based on a specific song
     if method == "Find similar songs based on a song you like":
-
+        
+        # Getting preprocessed data
         data = recommender.preprocessed_songs
 
         # Initialize session state variables if they don't exist
