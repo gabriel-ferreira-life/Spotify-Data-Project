@@ -18,13 +18,13 @@ sp_oauth = SpotifyOAuth(
     show_dialog=True
 )
 
-# Function to get the Spotify access token
+# Function to get the Spotify client
 def get_spotify_client():
     # Check if the token info is in session state
     if 'token_info' not in st.session_state or not st.session_state.token_info:
         st.session_state.token_info = sp_oauth.get_cached_token()
 
-    # If there's no cached token or if the token has expired, prompt for authentication
+    # If there's no cached token or if the token has expired, refresh or authenticate
     if not st.session_state.token_info or sp_oauth.is_token_expired(st.session_state.token_info):
         if st.session_state.token_info and sp_oauth.is_token_expired(st.session_state.token_info):
             # Refresh the token if it has expired
@@ -49,13 +49,17 @@ def get_spotify_client():
     else:
         return None
 
-# Function to create a playlist and add tracks
+# Function to create a playlist in the user's library and add tracks
 def create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris):
-    # Create a new playlist
-    playlist = spotify_client.user_playlist_create(user_id, playlist_name)
+    # Create a new playlist in the user's library
+    playlist = spotify_client.user_playlist_create(
+        user=user_id,
+        name=playlist_name,
+        public=True  # Set to False if you want the playlist to be private
+    )
     playlist_id = playlist['id']
 
-    # Add tracks to the playlist
+    # Add tracks to the new playlist
     spotify_client.playlist_add_items(playlist_id, track_uris)
     return playlist['external_urls']['spotify']
 
@@ -72,34 +76,8 @@ def handle_playlist_creation(spotify_client, track_uris):
     playlist_name = st.text_input("Enter a name for your playlist:")
 
     if playlist_name and track_uris:
-        # Check if a playlist with the same name already exists
-        existing_playlists = spotify_client.current_user_playlists()
-        playlist_names = [playlist['name'] for playlist in existing_playlists['items']]
-
-        if playlist_name in playlist_names:
-            # Ask the user if they want to overwrite or choose a new name
-            st.write("A playlist with this name already exists.")
-            overwrite = st.radio(
-                "Would you like to overwrite the existing playlist or choose a different name?",
-                ("Choose an option", "Overwrite", "Choose a different name")
-            )
-
-            if overwrite == "Overwrite":
-                # Find the existing playlist ID
-                existing_playlist = next(
-                    (playlist for playlist in existing_playlists['items'] if playlist['name'] == playlist_name),
-                    None
-                )
-                if existing_playlist:
-                    playlist_id = existing_playlist['id']
-                    # Clear the existing playlist and add new tracks
-                    spotify_client.playlist_replace_items(playlist_id, track_uris)
-                    st.write(f"Playlist '{playlist_name}' has been overwritten! [Open Playlist]({existing_playlist['external_urls']['spotify']})")
-            elif overwrite == "Choose a different name":
-                st.write("Please choose a different name for your playlist.")
-        else:
-            # Create the playlist and add tracks
-            playlist_url = create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris)
-            st.write(f"Playlist created successfully! [Open Playlist]({playlist_url})")
+        # Create the playlist and add tracks
+        playlist_url = create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris)
+        st.write(f"Playlist created successfully! [Open Playlist]({playlist_url})")
     else:
         st.write("Please provide a valid playlist name.")
