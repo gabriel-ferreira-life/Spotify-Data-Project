@@ -22,18 +22,18 @@ class MusicRecommender:
         self.songs = self.read_data()
 
         # Importing pre-trained models
-        with open('../models/mood_gb_model.pkl', 'rb') as file:
+        with open('models/mood_gb_model.pkl', 'rb') as file:
             self.mood_gb_model = pickle.load(file)
-        with open('../models/mood_encoder_model.pkl', 'rb') as file:
+        with open('models/mood_encoder_model.pkl', 'rb') as file:
             self.mood_encoder_model = pickle.load(file)
-        with open('../models/kmeans_model.pkl', 'rb') as file:
+        with open('models/kmeans_model.pkl', 'rb') as file:
             self.kmeans_model = pickle.load(file)
 
         # Preprocess data 
         self.preprocessed_songs = self.preprocess_songs()
 
     def load_config(self):
-        with open('../config/config.json', 'r') as f:
+        with open('config/config.json', 'r') as f: 
             config = json.load(f)
         return config
 
