@@ -22,18 +22,20 @@ sp_oauth = SpotifyOAuth(
 def get_spotify_client():
     # Check for cached token
     token_info = sp_oauth.get_cached_token()
-    
+
     if not token_info:
         # Display the authorization URL for the user
         auth_url = sp_oauth.get_authorize_url()
         st.write("Please authenticate with Spotify:")
         st.write(f"[Click here to authenticate]({auth_url})")
-        
-        # Extract the authorization code from the URL
-        code = st.query_params().get("code")
+
+        # Extract the authorization code from the URL using the correct Streamlit method
+        query_params = st.experimental_get_query_params()
+        code = query_params.get("code")
+
         if code:
             token_info = sp_oauth.get_access_token(code[0])
-    
+
     if token_info:
         return Spotify(auth=token_info['access_token'])
     else:
