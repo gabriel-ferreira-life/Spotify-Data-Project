@@ -6,7 +6,7 @@ from spotipy.cache_handler import FlaskSessionCacheHandler
 
 client_id = "be1b6f758c9d48a7bc17d4542525840e"
 client_secret = "b5fee9ec62b84b5bbed44a16310f71c9"
-redirect_uri = "http://localhost:8501"
+redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
 scope = 'playlist-modify-public'
 
 # Set up Spotify OAuth
