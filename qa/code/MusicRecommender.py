@@ -33,7 +33,12 @@ class MusicRecommender:
         self.preprocessed_songs = self.preprocess_songs()
 
     def load_config(self):
-        with open('config/config.json', 'r') as f:
+        # Get the absolute path to the current script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(script_dir, 'config', 'config.json')
+                                   
+        # Load the config file
+        with open(config_path, 'r') as f:
             config = json.load(f)
         return config
 
