@@ -103,44 +103,63 @@ class MusicRecommender:
         return df   
 
 
-    def recommend_by_mood(self, mood, n=10):
-        n = int(n)
+    def recommend_by_mood(self, mood, top_n=10):
+        top_n = int(top_n)
         songs = self.preprocessed_songs
         mood_musics = songs[songs['mood'] == mood].sort_values(by=['track_popularity'], ascending=False).head(300)
         # mood_musics = mood_musics[['track_id', 'track_name', 'track_artist', 'track_popularity', 
         #                            'playlist_genre', 'playlist_subgenre', 'release_year', 'mood']]
 
         sampled_musics = mood_musics.groupby('release_year').apply(
-            lambda x: x.sample(min(len(x), max(1, n // len(mood_musics['release_year'].unique()))))
+            lambda x: x.sample(min(len(x), max(1, top_n // len(mood_musics['release_year'].unique()))))
         ).reset_index(drop=True)
 
-        if len(sampled_musics) < n:
-            additional_songs = mood_musics.drop(sampled_musics.index).sample(n - len(sampled_musics))
-            sampled_musics = pd.concat([sampled_musics, additional_songs]).reset_index(drop=True)
+        if len(sampled_musics) < top_n:
+            additional_songs = mood_musics.drop(sampled_musics.index).sample(top_n - len(sampled_musics))
+            sampled_musics = pd.concat([sampled_musics, additional_songs])
 
-        return sampled_musics.sample(n)[['track_name','track_artist','track_album_name']]
+        # Format output
+        recommended_tracks = output_format(sampled_musics, top_n)
+
+        return recommended_tracks
 
     def recommend_similar_songs(self, song_name, top_n=10):
         top_n = int(top_n)
-        # Load input features    
         kmeans_input_features = self.config['kmeans_input_features']
         songs = self.preprocessed_songs
-        clustering_data = songs[kmeans_input_features+["kmeans_labels"]]
-        
+        clustering_data = songs[kmeans_input_features + ["kmeans_labels"]]
+
         # User input and feature extraction
         user_input = songs[songs['track_name'] == song_name]
-        # print(user_input)
         if user_input.empty:
             print("Song not found in the dataset.")
             return None
 
+        # Extract features for the user's selected song using the same features as clustering_data
         num_user_input = clustering_data.loc[user_input.index]
+        if num_user_input.empty:
+            print("User input features not found in clustering data.")
+            return None
+
+        # Convert num_user_input to a single row vector
+        user_song = num_user_input.iloc[0][kmeans_input_features].values
+
+        # Filter songs with the same kmeans label, then drop the user's song index
         like_songs = clustering_data[
             clustering_data['kmeans_labels'] == num_user_input['kmeans_labels'].values[0]
-        ].drop(index=user_input.index)
+        ]
+
+        # Check if the user's song index exists in like_songs and drop it if it does
+        common_indexes = like_songs.index.intersection(user_input.index)
+        like_songs = like_songs.drop(index=common_indexes)
+
+        # Ensure there are enough songs for the analysis
+        if like_songs.empty or len(like_songs) < 20:
+            print("Not enough similar songs found to make a recommendation.")
+            return None
 
         # Calculate covariance matrix
-        cov_matrix = np.cov(like_songs, rowvar=False)
+        cov_matrix = np.cov(like_songs[kmeans_input_features].values, rowvar=False)
         try:
             inv_cov_matrix = np.linalg.inv(cov_matrix)
         except LinAlgError:
@@ -148,21 +167,26 @@ class MusicRecommender:
 
         # Find top N similar songs using Mahalanobis distance
         def find_top_similar_songs(songs_df, user_song, inv_cov_matrix, top_n):
-            user_song = np.array(user_song.values.flatten())
             distances = {}
             for idx, song_features in songs_df.iterrows():
-                song_features = np.array(song_features.values.flatten())
+                song_features = np.array(song_features[kmeans_input_features].values.flatten())
                 distances[idx] = distance.mahalanobis(user_song, song_features, inv_cov_matrix)
 
+            # Sort distances and get the top N indices
             sorted_distances = sorted(distances.items(), key=lambda x: x[1])
             top_similar_indices = [idx for idx, _ in sorted_distances[:top_n]]
 
             top_songs = songs_df.loc[top_similar_indices]
-            top_distances = [distances[idx] for idx in top_similar_indices]
-    
             return top_songs
 
-        top_songs = find_top_similar_songs(like_songs, num_user_input, inv_cov_matrix, top_n=top_n)
-        recommended_tracks = songs[(songs.index.isin(top_songs.index))][['track_name','track_artist','track_album_name']]
+        top_songs = find_top_similar_songs(like_songs, user_song, inv_cov_matrix, top_n=top_n)
+        if top_songs.empty:
+            print("No similar songs found.")
+            return None
 
+        # Select Musics
+        recommended_tracks = songs[songs.index.isin(top_songs.index)]
+
+        # Format output
+        recommended_tracks = output_format(recommended_tracks, top_n)
         return recommended_tracks
