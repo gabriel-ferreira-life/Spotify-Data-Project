@@ -21,12 +21,18 @@ class MusicRecommender:
         self.config = self.load_config()
         self.songs = self.read_data()
 
+        # Get the absolute path to the current script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        mood_gb_model_path = os.path.join(script_dir, 'models', 'mood_gb_model.pkl')
+        mood_encoder_model_path = os.path.join(script_dir, 'models', 'mood_encoder_model.pkl')
+        kmeans_model_path = os.path.join(script_dir, 'models', 'kmeans_model.pkl')
+
         # Importing pre-trained models
-        with open('models/mood_gb_model.pkl', 'rb') as file:
+        with open(mood_gb_model_path, 'rb') as file:
             self.mood_gb_model = pickle.load(file)
-        with open('models/mood_encoder_model.pkl', 'rb') as file:
+        with open(mood_encoder_model_path, 'rb') as file:
             self.mood_encoder_model = pickle.load(file)
-        with open('models/kmeans_model.pkl', 'rb') as file:
+        with open(kmeans_model_path, 'rb') as file:
             self.kmeans_model = pickle.load(file)
 
         # Preprocess data 
