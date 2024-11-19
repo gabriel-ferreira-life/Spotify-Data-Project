@@ -23,9 +23,10 @@ class MusicRecommender:
 
         # Get the absolute path to the current script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        mood_gb_model_path = os.path.join(script_dir, 'models', 'mood_gb_model.pkl')
-        mood_encoder_model_path = os.path.join(script_dir, 'models', 'mood_encoder_model.pkl')
-        kmeans_model_path = os.path.join(script_dir, 'models', 'kmeans_model.pkl')
+        parent_dir = os.path.dirname(script_dir)
+        mood_gb_model_path = os.path.join(parent_dir, 'models', 'mood_gb_model.pkl')
+        mood_encoder_model_path = os.path.join(parent_dir, 'models', 'mood_encoder_model.pkl')
+        kmeans_model_path = os.path.join(parent_dir, 'models', 'kmeans_model.pkl')
 
         # Importing pre-trained models
         with open(mood_gb_model_path, 'rb') as file:
@@ -41,11 +42,17 @@ class MusicRecommender:
     def load_config(self):
         # Get the absolute path to the current script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(script_dir, 'config', 'config.json')
-                                   
+
+        # Move one level up to the parent directory
+        parent_dir = os.path.dirname(script_dir)
+
+        # Construct the path to the config.json file in the parent directory's config folder
+        config_path = os.path.join(parent_dir, 'config', 'config.json')
+
         # Load the config file
         with open(config_path, 'r') as f:
             config = json.load(f)
+        
         return config
 
     def read_data(self):
