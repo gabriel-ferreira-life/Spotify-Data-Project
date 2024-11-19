@@ -20,26 +20,17 @@ sp_oauth = SpotifyOAuth(
 
 # Function to get the Spotify access token
 def get_spotify_client():
-    # Check for cached token
+    # Check if the token is already cached in session state
     if 'token_info' not in st.session_state:
         st.session_state.token_info = None
 
-    # Initialize Spotify OAuth
-    sp_oauth = SpotifyOAuth(
-        client_id=client_id,
-        client_secret=client_secret,
-        redirect_uri=redirect_uri,
-        scope=scope,
-        show_dialog=True
-    )
-
+    # Display the authorization URL if there's no token
     if not st.session_state.token_info:
-        # Display the authorization URL for the user
         auth_url = sp_oauth.get_authorize_url()
         st.write("Please authenticate with Spotify:")
         st.write(f"[Click here to authenticate]({auth_url})")
 
-        # Extract the authorization code from the URL
+        # Extract the authorization code from the query parameters
         query_params = st.experimental_get_query_params()
         code = query_params.get("code")
 
@@ -47,35 +38,28 @@ def get_spotify_client():
             # Exchange the authorization code for a token
             st.session_state.token_info = sp_oauth.get_access_token(code[0])
 
-    if st.session_state.token_info:
+    # If we have a valid token, return the Spotify client
+    if st.session_state.token_info and not sp_oauth.is_token_expired(st.session_state.token_info):
         return Spotify(auth=st.session_state.token_info['access_token'])
     else:
         return None
 
-
-# Function to create a playlist and add tracks
+# Function to create a Spotify playlist and add tracks
 def create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris):
     # Create a new playlist
     playlist = spotify_client.user_playlist_create(user_id, playlist_name)
     playlist_id = playlist['id']
 
-    # Add tracks to the playlist
+    # Add tracks to the new playlist
     spotify_client.playlist_add_items(playlist_id, track_uris)
     return playlist['external_urls']['spotify']
 
-
+# Function to handle playlist creation
 def handle_playlist_creation(spotify_client, track_uris):
-    """
-    Handles the creation or overwriting of a Spotify playlist.
-
-    Parameters:
-        spotify_client: The Spotify client object for API requests.
-        track_uris (list): A list of track URIs to be added to the playlist.
-    """
     # Get the current user's ID
     user_id = spotify_client.current_user()["id"]
 
-    # User input for the playlist name
+    # Prompt the user for the playlist name
     playlist_name = st.text_input("Enter a name for your playlist:")
 
     if playlist_name and track_uris:
@@ -92,21 +76,34 @@ def handle_playlist_creation(spotify_client, track_uris):
             )
 
             if overwrite == "Overwrite":
-                # Find the existing playlist ID
+                # Find and overwrite the existing playlist
                 existing_playlist = next(
                     (playlist for playlist in existing_playlists['items'] if playlist['name'] == playlist_name),
                     None
                 )
                 if existing_playlist:
                     playlist_id = existing_playlist['id']
-                    # Clear the existing playlist and add new tracks
                     spotify_client.playlist_replace_items(playlist_id, track_uris)
                     st.write(f"Playlist '{playlist_name}' has been overwritten! [Open Playlist]({existing_playlist['external_urls']['spotify']})")
             elif overwrite == "Choose a different name":
                 st.write("Please choose a different name for your playlist.")
         else:
-            # Create the playlist and add tracks
+            # Create a new playlist and add tracks
             playlist_url = create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris)
             st.write(f"Playlist created successfully! [Open Playlist]({playlist_url})")
     else:
         st.write("Please provide a valid playlist name.")
+
+# Streamlit app logic
+st.title("Spotify Playlist Creator")
+
+# Get the Spotify client
+spotify_client = get_spotify_client()
+
+if spotify_client:
+    st.write("Successfully authenticated with Spotify!")
+    # Example usage: handling playlist creation
+    track_uris = ["spotify:track:TRACK_ID_1", "spotify:track:TRACK_ID_2"]  # Replace with actual track URIs
+    handle_playlist_creation(spotify_client, track_uris)
+else:
+    st.write("Waiting for Spotify authentication...")
