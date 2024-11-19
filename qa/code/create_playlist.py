@@ -20,22 +20,32 @@ sp_oauth = SpotifyOAuth(
 
 # Function to get the Spotify access token
 def get_spotify_client():
-    # Check for cached token
-    token_info = sp_oauth.get_cached_token()
-    
-    if not token_info:
-        # Display the authorization URL for the user
-        auth_url = sp_oauth.get_authorize_url()
-        st.write("Please authenticate with Spotify:")
-        st.write(f"[Click here to authenticate]({auth_url})")
-        
-        # Extract the authorization code from the URL
-        code = st.query_params().get("code")
-        if code:
-            token_info = sp_oauth.get_access_token(code[0])
-    
-    if token_info:
-        return Spotify(auth=token_info['access_token'])
+    # Check if the token info is in session state
+    if 'token_info' not in st.session_state or not st.session_state.token_info:
+        st.session_state.token_info = sp_oauth.get_cached_token()
+
+    # If there's no cached token or if the token has expired, prompt for authentication
+    if not st.session_state.token_info or sp_oauth.is_token_expired(st.session_state.token_info):
+        if st.session_state.token_info and sp_oauth.is_token_expired(st.session_state.token_info):
+            # Refresh the token if it has expired
+            st.session_state.token_info = sp_oauth.refresh_access_token(st.session_state.token_info['refresh_token'])
+        else:
+            # Display the authorization URL for the user to authenticate
+            auth_url = sp_oauth.get_authorize_url()
+            st.write("Please authenticate with Spotify:")
+            st.write(f"[Click here to authenticate]({auth_url})")
+
+            # Extract the authorization code from the URL
+            query_params = st.experimental_get_query_params()
+            code = query_params.get("code")
+
+            if code:
+                # Exchange the authorization code for a token
+                st.session_state.token_info = sp_oauth.get_access_token(code[0])
+
+    # If we have a valid token, return the Spotify client
+    if st.session_state.token_info:
+        return Spotify(auth=st.session_state.token_info['access_token'])
     else:
         return None
 
@@ -49,15 +59,12 @@ def create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris):
     spotify_client.playlist_add_items(playlist_id, track_uris)
     return playlist['external_urls']['spotify']
 
-
+# Function to handle playlist creation
 def handle_playlist_creation(spotify_client, track_uris):
-    """
-    Handles the creation or overwriting of a Spotify playlist.
+    if not spotify_client:
+        st.write("Please authenticate with Spotify before creating a playlist.")
+        return
 
-    Parameters:
-        spotify_client: The Spotify client object for API requests.
-        track_uris (list): A list of track URIs to be added to the playlist.
-    """
     # Get the current user's ID
     user_id = spotify_client.current_user()["id"]
 

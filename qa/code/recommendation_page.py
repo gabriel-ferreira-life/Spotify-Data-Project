@@ -156,13 +156,19 @@ def show_recommendation_page():
         if st.session_state.recommendations is not None:
             st.write(f"Here are some '{mood}' songs to match your mood:")
             st.dataframe(st.session_state.recommendations)
+
+            # Button to create a playlist
             if st.button("Create Spotify Playlist"):
                 st.session_state.create_playlist_clicked = True
+                
+                # handle_playlist_creation(spotify_client, track_uris)
+                
 
         if st.session_state.create_playlist_clicked:
             spotify_client = get_spotify_client()
             if spotify_client:
                 track_uris = st.session_state.recommendations['Song ID'].tolist()
+                spotify_client = get_spotify_client()  # Authenticate if needed
                 handle_playlist_creation(spotify_client, track_uris)
             else:
                 st.write("Failed to authenticate with Spotify. Please try again.")
