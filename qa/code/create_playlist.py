@@ -21,25 +21,37 @@ sp_oauth = SpotifyOAuth(
 # Function to get the Spotify access token
 def get_spotify_client():
     # Check for cached token
-    token_info = sp_oauth.get_cached_token()
+    if 'token_info' not in st.session_state:
+        st.session_state.token_info = None
 
-    if not token_info:
+    # Initialize Spotify OAuth
+    sp_oauth = SpotifyOAuth(
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        scope=scope,
+        show_dialog=True
+    )
+
+    if not st.session_state.token_info:
         # Display the authorization URL for the user
         auth_url = sp_oauth.get_authorize_url()
         st.write("Please authenticate with Spotify:")
         st.write(f"[Click here to authenticate]({auth_url})")
 
-        # Extract the authorization code from the URL using the correct Streamlit method
+        # Extract the authorization code from the URL
         query_params = st.experimental_get_query_params()
         code = query_params.get("code")
 
         if code:
-            token_info = sp_oauth.get_access_token(code[0])
+            # Exchange the authorization code for a token
+            st.session_state.token_info = sp_oauth.get_access_token(code[0])
 
-    if token_info:
-        return Spotify(auth=token_info['access_token'])
+    if st.session_state.token_info:
+        return Spotify(auth=st.session_state.token_info['access_token'])
     else:
         return None
+
 
 # Function to create a playlist and add tracks
 def create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris):
