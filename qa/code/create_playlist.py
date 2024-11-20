@@ -2,42 +2,54 @@ import os
 import streamlit as st
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
-from spotipy.cache_handler import FlaskSessionCacheHandler
+from spotipy.cache_handler import FlaskSessionCacheHandler, MemoryCacheHandler
 
 client_id = "be1b6f758c9d48a7bc17d4542525840e"
 client_secret = "b5fee9ec62b84b5bbed44a16310f71c9"
 redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
 scope = 'playlist-modify-public'
 
-# Set up Spotify OAuth
+# Set up Spotify OAuth with MemoryCacheHandler for session handling
+cache_handler = MemoryCacheHandler()  # Using in-memory cache for Streamlit
 sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
     scope=scope,
+    cache_handler=cache_handler,
     show_dialog=True
 )
 
-# Function to get the Spotify access token
 def get_spotify_client():
-    # Check for cached token
-    token_info = sp_oauth.get_cached_token()
-    
-    if not token_info:
-        # Display the authorization URL for the user
-        auth_url = sp_oauth.get_authorize_url()
-        st.write("Please authenticate with Spotify:")
-        st.write(f"[Click here to authenticate]({auth_url})")
-        
-        # Extract the authorization code from the URL
-        code = st.query_params().get("code")
-        if code:
-            token_info = sp_oauth.get_access_token(code[0])
-    
-    if token_info:
-        return Spotify(auth=token_info['access_token'])
+    # Check if the token info is in session state
+    if 'token_info' not in st.session_state:
+        st.session_state.token_info = cache_handler.get_cached_token()
+
+    # If the token is not valid or has expired, refresh it or prompt for authentication
+    if not st.session_state.token_info or sp_oauth.is_token_expired(st.session_state.token_info):
+        if st.session_state.token_info and sp_oauth.is_token_expired(st.session_state.token_info):
+            # Refresh the token if it has expired
+            st.session_state.token_info = sp_oauth.refresh_access_token(st.session_state.token_info['refresh_token'])
+        else:
+            # Prompt for authentication if there is no valid token
+            auth_url = sp_oauth.get_authorize_url()
+            st.write("Please authenticate with Spotify:")
+            st.write(f"[Click here to authenticate]({auth_url})")
+
+            # Extract the authorization code from the URL
+            query_params = st.query_params
+            code = query_params.get("code")
+
+            if code:
+                # Exchange the authorization code for an access token
+                st.session_state.token_info = sp_oauth.get_access_token(code[0])
+
+    # Return the Spotify client if the token is valid
+    if st.session_state.token_info:
+        return Spotify(auth=st.session_state.token_info['access_token'])
     else:
         return None
+
 
 # Function to create a playlist and add tracks
 def create_spotify_playlist(spotify_client, user_id, playlist_name, track_uris):
