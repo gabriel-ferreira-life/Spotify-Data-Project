@@ -51,7 +51,7 @@ def get_spotify_client():
 
         if code:
             # Exchange the authorization code for an access token
-            st.write("code", code) ## Debug
+            # st.write("code", code) ## Debug
             token_info = sp_oauth.get_access_token(code)
             if token_info:
                 st.success("Authenticated successfully!")
@@ -87,9 +87,9 @@ def handle_playlist_creation(spotify_client, track_uris):
     # Get the current user's ID
     
     current_user = spotify_client.current_user()
-    st.write("Authenticated user info:", current_user)
+    # st.write("Authenticated user info:", current_user) ## Debug
     user_id = current_user["id"]
-    st.write("user_id", user_id)
+    # st.write("user_id", user_id) ## Debug
 
     # User input for the playlist name
     playlist_name = st.text_input("Enter a name for your playlist:")
