@@ -154,8 +154,6 @@ def show_recommendation_page():
             if st.button("Create Spotify Playlist"):
                 st.session_state.create_playlist_clicked = True
                 
-                # handle_playlist_creation(spotify_client, track_uris)
-                
 
 
     ############################ Create Playlist ############################
