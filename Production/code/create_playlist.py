@@ -33,7 +33,7 @@ def get_spotify_client():
 
     # Check for cached token
     token_info = sp_oauth.get_cached_token()
-    token_info=False
+    # token_info=False
 
     if token_info:
         return Spotify(auth=token_info['access_token'])  
