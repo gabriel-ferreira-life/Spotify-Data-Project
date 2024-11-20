@@ -50,7 +50,8 @@ def get_spotify_client():
 
         if code:
             # Exchange the authorization code for an access token
-            token_info = sp_oauth.get_access_token(code[0])
+            st.write(code)
+            token_info = sp_oauth.get_access_token(code)
             if token_info:
                 st.success("Authenticated successfully!")
                 st.session_state.authenticated = True
