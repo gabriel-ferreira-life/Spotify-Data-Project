@@ -6,8 +6,8 @@ from spotipy.cache_handler import FlaskSessionCacheHandler
 
 client_id = "be1b6f758c9d48a7bc17d4542525840e"
 client_secret = "b5fee9ec62b84b5bbed44a16310f71c9"
-# redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
-redirect_uri = "http://localhost:8501"
+redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
+# redirect_uri = "http://localhost:8501"
 scope = 'playlist-modify-public, playlist-modify-private'
 # scope = 'playlist-modify-public'
 
@@ -20,15 +20,12 @@ sp_oauth = SpotifyOAuth(
     show_dialog=False
 )
 
-
-
-
 def get_spotify_client():
 
     # Use st.session_state to track authentication status
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
-        
+
     # Check if the user is already authenticated
     if st.session_state.authenticated:
         st.success("Authenticated successfully!")
@@ -38,7 +35,10 @@ def get_spotify_client():
     token_info = sp_oauth.get_cached_token()
     token_info=False
 
-    if not token_info:
+    if token_info:
+        return Spotify(auth=token_info['access_token'])  
+
+    elif not token_info:
         # Display the authorization URL for the user
         auth_url = sp_oauth.get_authorize_url()
         st.write("Please authenticate with Spotify:")
@@ -59,6 +59,14 @@ def get_spotify_client():
                 st.error("Failed to get access token.")
         else:
             st.info("Waiting for authentication...")
+        
+        
+        # # Parse the authorization code from the redirected URL
+        # code = sp_oauth.parse_response_code(redirected_url)
+        # token_info = sp_oauth.get_access_token(code)
+
+      
+    
     
 
 
