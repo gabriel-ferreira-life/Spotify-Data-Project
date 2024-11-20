@@ -10,6 +10,7 @@ def initiate_class():
     return MusicRecommender()
 
 def show_recommendation_page():
+    ############################ Initialization ############################
     # Instantiate the recommender
     recommender = initiate_class()
 
@@ -41,7 +42,7 @@ def show_recommendation_page():
 
         
 
-    ############################ Song Similarity Method ############################
+    ############################ Recommendation Method: Song Similarity ############################
     if method == "Find similar songs based on a song you like":
         # Getting preprocessed data
         data = recommender.preprocessed_songs
@@ -118,21 +119,13 @@ def show_recommendation_page():
         if st.session_state.recommendations is not None:
             st.write(f"Here are some songs similar to '{song_name}':")
             st.dataframe(st.session_state.recommendations)
+
             if st.button("Create Spotify Playlist"):
                 st.session_state.create_playlist_clicked = True
 
-        # Handle playlist creation
-        if st.session_state.create_playlist_clicked:
-            spotify_client = get_spotify_client()
-            if spotify_client:
-                track_uris = st.session_state.recommendations['Song ID'].to_list()
-                handle_playlist_creation(spotify_client, track_uris)
-            else:
-                st.write("Failed to authenticate with Spotify. Please try again.")
-
 
     
-    ############################ Mood Method ############################
+    ############################ Recommendation Method: Mood ############################
     elif method == "Get songs matching your current mood":
         mood_options = ["Happy", "Energetic", "Neutral", "Relaxed", "Melancholic"]
         mood = st.selectbox("Choose a mood that best describes how you're feeling:", mood_options)
@@ -164,11 +157,17 @@ def show_recommendation_page():
                 # handle_playlist_creation(spotify_client, track_uris)
                 
 
-        if st.session_state.create_playlist_clicked:
+
+    ############################ Create Playlist ############################
+    if st.session_state.create_playlist_clicked:
+        # Check if 'spotify_client' exists in session_state and is not None
+        if "spotify_client" in st.session_state and st.session_state.spotify_client:
+            spotify_client = st.session_state.spotify_client
+        else:
             spotify_client = get_spotify_client()
-            if spotify_client:
-                track_uris = st.session_state.recommendations['Song ID'].tolist()
-                spotify_client = get_spotify_client()  # Authenticate if needed
-                handle_playlist_creation(spotify_client, track_uris)
-            else:
-                st.write("Failed to authenticate with Spotify. Please try again.")
+            
+        if spotify_client:
+            track_uris = st.session_state.recommendations['Song ID'].tolist()
+            handle_playlist_creation(spotify_client, track_uris)
+        else:
+            st.write("Failed to authenticate with Spotify. Please try again.")
