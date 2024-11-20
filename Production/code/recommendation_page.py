@@ -168,7 +168,7 @@ def show_recommendation_page():
             spotify_client = get_spotify_client()
             if spotify_client:
                 track_uris = st.session_state.recommendations['Song ID'].tolist()
-                
+                spotify_client = get_spotify_client()  # Authenticate if needed
                 handle_playlist_creation(spotify_client, track_uris)
             else:
                 st.write("Failed to authenticate with Spotify. Please try again.")
