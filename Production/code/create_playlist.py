@@ -17,6 +17,7 @@ sp_oauth = SpotifyOAuth(
     client_secret=client_secret,
     redirect_uri=redirect_uri,
     scope=scope,
+    cache_handler=None,
     show_dialog=False
 )
 
@@ -42,7 +43,7 @@ def get_spotify_client():
         # Display the authorization URL for the user
         auth_url = sp_oauth.get_authorize_url()
         st.write("Please authenticate with Spotify:")
-        st.write(auth_url)
+        # st.write(auth_url) ## Debug
         st.markdown(f"[Click here to authenticate]({auth_url})", unsafe_allow_html=True)
 
         # Extract the 'code' parameter from the URL
@@ -50,7 +51,7 @@ def get_spotify_client():
 
         if code:
             # Exchange the authorization code for an access token
-            st.write(code)
+            # st.write(code) ## Debug
             token_info = sp_oauth.get_access_token(code)
             if token_info:
                 st.success("Authenticated successfully!")
@@ -62,20 +63,6 @@ def get_spotify_client():
         else:
             st.info("Waiting for authentication...")
         
-        
-        # # Parse the authorization code from the redirected URL
-        # code = sp_oauth.parse_response_code(redirected_url)
-        # token_info = sp_oauth.get_access_token(code)
-
-      
-    
-    
-
-
-
-
-
-
 
 
 # Function to create a playlist and add tracks
@@ -99,6 +86,7 @@ def handle_playlist_creation(spotify_client, track_uris):
     """
     # Get the current user's ID
     user_id = spotify_client.current_user()["id"]
+    st.write(user_id)
 
     # User input for the playlist name
     playlist_name = st.text_input("Enter a name for your playlist:")
