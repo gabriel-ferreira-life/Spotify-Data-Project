@@ -85,7 +85,10 @@ def handle_playlist_creation(spotify_client, track_uris):
         track_uris (list): A list of track URIs to be added to the playlist.
     """
     # Get the current user's ID
-    user_id = spotify_client.current_user()["id"]
+    
+    current_user = spotify_client.current_user()
+    st.write("Authenticated user info:", current_user)
+    user_id = current_user["id"]
     st.write("user_id", user_id)
 
     # User input for the playlist name
