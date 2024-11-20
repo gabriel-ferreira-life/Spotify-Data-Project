@@ -21,20 +21,38 @@ class MusicRecommender:
         self.config = self.load_config()
         self.songs = self.read_data()
 
+        # Get the absolute path to the current script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)
+        mood_gb_model_path = os.path.join(parent_dir, 'models', 'mood_gb_model.pkl')
+        mood_encoder_model_path = os.path.join(parent_dir, 'models', 'mood_encoder_model.pkl')
+        kmeans_model_path = os.path.join(parent_dir, 'models', 'kmeans_model.pkl')
+
         # Importing pre-trained models
-        with open('models/mood_gb_model.pkl', 'rb') as file:
+        with open(mood_gb_model_path, 'rb') as file:
             self.mood_gb_model = pickle.load(file)
-        with open('models/mood_encoder_model.pkl', 'rb') as file:
+        with open(mood_encoder_model_path, 'rb') as file:
             self.mood_encoder_model = pickle.load(file)
-        with open('models/kmeans_model.pkl', 'rb') as file:
+        with open(kmeans_model_path, 'rb') as file:
             self.kmeans_model = pickle.load(file)
 
         # Preprocess data 
         self.preprocessed_songs = self.preprocess_songs()
 
     def load_config(self):
-        with open('config/config.json', 'r') as f: 
+        # Get the absolute path to the current script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Move one level up to the parent directory
+        parent_dir = os.path.dirname(script_dir)
+
+        # Construct the path to the config.json file in the parent directory's config folder
+        config_path = os.path.join(parent_dir, 'config', 'config.json')
+
+        # Load the config file
+        with open(config_path, 'r') as f:
             config = json.load(f)
+        
         return config
 
     def read_data(self):
