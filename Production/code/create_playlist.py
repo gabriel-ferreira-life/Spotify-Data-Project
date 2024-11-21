@@ -7,7 +7,7 @@ from spotipy.cache_handler import FlaskSessionCacheHandler
 client_id = "be1b6f758c9d48a7bc17d4542525840e"
 client_secret = "b5fee9ec62b84b5bbed44a16310f71c9"
 redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
-# redirect_uri = "http://localhost:8501"
+redirect_uri = "http://localhost:8501"
 scope = 'playlist-modify-public, playlist-modify-private, user-read-private'
 # scope = 'playlist-modify-public'
 
@@ -34,7 +34,7 @@ def get_spotify_client():
 
     # Check for cached token
     token_info = sp_oauth.get_cached_token()
-    token_info=False
+    # token_info=False
 
     if token_info:
         return Spotify(auth=token_info['access_token'])  
