@@ -8,5 +8,5 @@
     "valence", "tempo", "release_year"],
     "kmeans_input_features": ["danceability", "energy", "key", "loudness", "mode",
     "speechiness", "acousticness", "instrumentalness", "liveness",
-    "valence", "tempo","track_artist_label","release_year"]
+    "valence", "tempo", "release_year"]
 }
