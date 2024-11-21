@@ -59,9 +59,8 @@ def search_artist(songs_df, partial_artist, max_results=100):
     return matching_artists[['track_artist']].drop_duplicates().head(max_results)
 
 def output_format(recommendations_df, top_n):
-    recommendations_df = recommendations_df[['track_name','track_artist', 'track_popularity', 'track_id']]
-    recommendations_df.columns = ["Song Name", "Artist Name", "Song Popularity Score", "Song ID"]
-    # recommendations_df = recommendations_df.sample(top_n).reset_index(drop=True)
-    recommendations_df = recommendations_df.reset_index(drop=True)
+    recommendations_df = recommendations_df[['track_id', 'track_name','track_artist','track_album_name']]
+    recommendations_df.columns = ["Song ID", "Song Name", "Artist Name", "Album Name"]
+    recommendations_df = recommendations_df.sample(top_n).reset_index(drop=True)
     recommendations_df.index = recommendations_df.index + 1
     return recommendations_df

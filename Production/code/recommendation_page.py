@@ -82,6 +82,9 @@ def show_recommendation_page():
                     selected_song = st.selectbox("Select a song:", suggestions['track_name'] + " - " + suggestions['track_artist'])
                     st.write(f"You selected: {selected_song}")
                     song_name = selected_song.split(" - ")[0]
+                    artist_name = selected_song.split(" - ")[1]
+                    # st.write(song_name)
+                    # st.write(artist_name)
                 else:
                     st.write("No matching songs found.")
             else:
@@ -93,10 +96,11 @@ def show_recommendation_page():
             if partial_artist_name:
                 artist_suggestions = search_artist(data, partial_artist_name)
                 if not artist_suggestions.empty:
-                    selected_artist = st.selectbox("Select an artist:", artist_suggestions['track_artist'])
-                    song_list = data[data['track_artist'] == selected_artist]["track_name"]
+                    artist_name = st.selectbox("Select an artist:", artist_suggestions['track_artist'])
+                    song_list = data[data['track_artist'] == artist_name]["track_name"]
                     song_name = st.selectbox("Select Song: ", song_list)
-                    st.write(song_name)
+                    # st.write(song_name)
+                    # st.write(artist_name)
                 else:
                     st.write("No matching artists found.")
             else:
@@ -109,7 +113,7 @@ def show_recommendation_page():
         if st.button("Get Recommendations"):
             st.session_state.create_playlist_clicked = False
             if song_name:
-                recommendations = recommender.recommend_similar_songs(song_name, top_n)
+                recommendations = recommender.recommend_similar_songs(song_name, artist_name, top_n)
                 if not recommendations.empty:
                     st.session_state.recommendations = recommendations
                 else:

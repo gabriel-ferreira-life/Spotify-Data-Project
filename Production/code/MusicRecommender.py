@@ -11,6 +11,7 @@ pd.set_option('display.max_columns', 20)
 from sklearn.preprocessing import LabelEncoder
 from scipy.spatial import distance
 from numpy.linalg import LinAlgError
+from sklearn.decomposition import PCA
 from helper import *
 import streamlit as st
 
@@ -94,7 +95,9 @@ class MusicRecommender:
         kmeans_input_features = self.config['kmeans_input_features']
 
         # Predict mood
-        df['kmeans_labels'] = self.kmeans_model.predict(df[kmeans_input_features])
+        pca = PCA(n_components=2)
+        scaled_data = pca.fit_transform(df[kmeans_input_features])
+        df['kmeans_labels'] = self.kmeans_model.predict(scaled_data)
 
         return df['kmeans_labels']
         
@@ -138,17 +141,19 @@ class MusicRecommender:
 
         # Format output
         recommended_tracks = output_format(sampled_musics, top_n)
+        recommended_tracks = recommended_tracks.sample(top_n)
 
         return recommended_tracks
 
-    def recommend_similar_songs(self, song_name, top_n=10):
+    def recommend_similar_songs(self, song_name, artist_name, top_n=10):
         top_n = int(top_n)
         kmeans_input_features = self.config['kmeans_input_features']
         songs = self.preprocessed_songs
         clustering_data = songs[kmeans_input_features + ["kmeans_labels"]]
 
         # User input and feature extraction
-        user_input = songs[songs['track_name'] == song_name]
+        user_input = songs[(songs['track_name'] == song_name) & (songs['track_artist'] == artist_name)]
+
         if user_input.empty:
             print("Song not found in the dataset.")
             return None
@@ -204,6 +209,7 @@ class MusicRecommender:
 
         # Select Musics
         recommended_tracks = songs[songs.index.isin(top_songs.index)]
+        recommended_tracks = pd.concat([user_input, recommended_tracks]).head(top_n)#.reset_index(drop=True)
 
         # Format output
         recommended_tracks = output_format(recommended_tracks, top_n)
