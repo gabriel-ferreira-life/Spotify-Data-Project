@@ -25,6 +25,7 @@ sp_oauth = SpotifyOAuth(
 
 
 def get_spotify_client():
+    st.session_state.user_id = None
     # Clear session states for fresh authentication
     if "spotify_client" in st.session_state:
         del st.session_state["spotify_client"]
