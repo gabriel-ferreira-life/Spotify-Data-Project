@@ -41,31 +41,25 @@ def get_spotify_client():
     # Extract 'code' from query parameters
     code = st.query_params.get("code")
 
+    try:
+        # Exchange the authorization code for an access token
+        # st.write("code: ", code)
+        # st.write("code 0: ", code[0])
+        token_info = sp_oauth.get_access_token(code)
+        spotify_client = Spotify(auth=token_info['access_token'])
+        current_user = spotify_client.current_user()  # Fetch user info
+        st.session_state.spotify_client = spotify_client
+        st.session_state.authenticated = True
+        st.session_state.user_id = current_user["id"]
+        st.write("User ID: ", st.session_state.user_id)
 
-    if code:
-        try:
-            # Exchange the authorization code for an access token
-            # st.write("code: ", code)
-            # st.write("code 0: ", code[0])
-            token_info = sp_oauth.get_access_token(code)
+        # Debug user info
+        # st.write("Authenticated User Info:", current_user)
+        st.success("Authenticated successfully!")
+        return spotify_client
 
-            if token_info:
-                spotify_client = Spotify(auth=token_info['access_token'])
-                current_user = spotify_client.current_user()  # Fetch user info
-                st.session_state.spotify_client = spotify_client
-                st.session_state.authenticated = True
-                st.session_state.user_id = current_user["id"]
-
-                # Debug user info
-                # st.write("Authenticated User Info:", current_user)
-                st.success("Authenticated successfully!")
-                return spotify_client
-            else:
-                st.error("Failed to get access token.")
-        except Exception as e:
-            st.error(f"Error during authentication: {e}")
-    else:
-        st.info("Waiting for authentication...")
+    except Exception as e:
+        st.error(f"Error during authentication: {e}")
 
 
         

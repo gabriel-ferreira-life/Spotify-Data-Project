@@ -20,6 +20,7 @@ def show_recommendation_page():
         st.session_state.session_key = str(uuid.uuid4())
         st.session_state.authenticated = False
         st.session_state.spotify_client = None
+        st.session_state.user_id = None
 
     st.write("session_key: ", st.session_state.session_key)
     # st.write("Used ID: ", st.session_state.user_id)
