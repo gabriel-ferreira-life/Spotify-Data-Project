@@ -33,50 +33,34 @@ def get_spotify_client():
     if "user_id" in st.session_state:
         del st.session_state["user_id"]
 
-    # Extract 'code' from query parameters
-    code = st.query_params
-    st.write("code: ", code)
-    token_info = sp_oauth.get_access_token(code)
-    st.write("token_info: ", token_info)
-    st.write("code: ", code)
-    spotify_client = Spotify(auth=token_info['access_token'])
-    current_user = spotify_client.current_user()  # Fetch user info
-    st.session_state.spotify_client = spotify_client
-    st.session_state.authenticated = True
-    st.session_state.user_id = current_user["id"]
-    
-    st.write("user_id: ", current_user)
-
     # Display the authorization URL
     auth_url = sp_oauth.get_authorize_url()
     st.write("Please authenticate with Spotify:")
     st.markdown(f"[Click here to authenticate]({auth_url})", unsafe_allow_html=True)
 
-    st.write("Current Query Parameters:", st.query_params)
-
-
     # Extract 'code' from query parameters
     code = st.query_params.get("code")
-    st.write("code: ", code)
-    token_info = sp_oauth.get_access_token(code)
-    st.write("token_info: ", token_info)
-    st.write("code: ", code)
-    spotify_client = Spotify(auth=token_info['access_token'])
-    current_user = spotify_client.current_user()  # Fetch user info
-    st.session_state.spotify_client = spotify_client
-    st.session_state.authenticated = True
-    st.session_state.user_id = current_user["id"]
+
+    # st.write("code: ", code)
+    # token_info = sp_oauth.get_access_token(code)
+    # st.write("token_info: ", token_info)
+    # st.write("code: ", code)
+    # spotify_client = Spotify(auth=token_info['access_token'])
+    # current_user = spotify_client.current_user()  # Fetch user info
+    # st.session_state.spotify_client = spotify_client
+    # st.session_state.authenticated = True
+    # st.session_state.user_id = current_user["id"]
     
-    st.write("user_id: ", current_user)
+    # st.write("user_id: ", current_user)
 
 
     if code:
         try:
             # Exchange the authorization code for an access token
-            st.write("code: ", code)
-            st.write("code 0: ", code[0])
+            # st.write("code: ", code)
+            # st.write("code 0: ", code[0])
             token_info = sp_oauth.get_access_token()
-            st.write("token_info: ", token_info)
+            # st.write("token_info: ", token_info)
 
             # st.experimental_set_query_params()  # Clear the query parameters
             if token_info:
