@@ -3,7 +3,7 @@ from MusicRecommender import MusicRecommender
 import numpy as np
 from helper import standardize_date, search_songs, search_artist
 from create_playlist import get_spotify_client, create_spotify_playlist, handle_playlist_creation
-
+import uuid
 
 @st.cache_data
 def initiate_class():
@@ -13,6 +13,17 @@ def show_recommendation_page():
     ############################ Initialization ############################
     # Instantiate the recommender
     recommender = initiate_class()
+
+    # Generate a unique session key for a new session
+    if "session_key" not in st.session_state:
+        st.session_state.clear()
+        st.session_state.session_key = str(uuid.uuid4())
+        st.session_state.authenticated = False
+        st.session_state.spotify_client = None
+
+    st.write("session_key: ", st.session_state.session_key)
+    # st.write("Used ID: ", st.session_state.user_id)
+
 
     # Welcome message
     st.title("Music Recommender")
@@ -162,6 +173,8 @@ def show_recommendation_page():
 
     ############################ Create Playlist ############################
     if st.session_state.create_playlist_clicked:
+        # Ensure all session state variables are initialized
+
         # Check if 'spotify_client' exists in session_state and is not None
         if "spotify_client" in st.session_state and st.session_state.spotify_client:
             spotify_client = st.session_state.spotify_client
@@ -169,6 +182,9 @@ def show_recommendation_page():
             spotify_client = get_spotify_client()
             
         if spotify_client:
+            current_user = spotify_client.current_user()
+            # st.write("User Info:", current_user)  # Full user details for debugging
+            # st.write("User ID:", current_user["id"]) 
             track_uris = st.session_state.recommendations['Song ID'].tolist()
             handle_playlist_creation(spotify_client, track_uris)
         else:

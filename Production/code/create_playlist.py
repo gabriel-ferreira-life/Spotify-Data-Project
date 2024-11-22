@@ -1,5 +1,7 @@
 import os
 import streamlit as st
+import uuid
+import spotipy
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import FlaskSessionCacheHandler
@@ -7,7 +9,7 @@ from spotipy.cache_handler import FlaskSessionCacheHandler
 client_id = "be1b6f758c9d48a7bc17d4542525840e"
 client_secret = "b5fee9ec62b84b5bbed44a16310f71c9"
 redirect_uri = "https://simplyfy-recommender-system.streamlit.app"
-# redirect_uri = "http://localhost:8501"
+redirect_uri = "http://localhost:8501"
 scope = 'playlist-modify-public, playlist-modify-private, user-read-private'
 # scope = 'playlist-modify-public'
 
@@ -18,50 +20,84 @@ sp_oauth = SpotifyOAuth(
     redirect_uri=redirect_uri,
     scope=scope,
     cache_handler=None,
-    show_dialog=False
+    show_dialog=True
 )
 
+
 def get_spotify_client():
+    # Clear session states for fresh authentication
+    if "spotify_client" in st.session_state:
+        del st.session_state["spotify_client"]
+    if "authenticated" in st.session_state:
+        del st.session_state["authenticated"]
+    if "user_id" in st.session_state:
+        del st.session_state["user_id"]
 
-    # Use st.session_state to track authentication status
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
+    # Extract 'code' from query parameters
+    code = st.query_params
+    st.write("code: ", code)
+    token_info = sp_oauth.get_access_token(code)
+    st.write("token_info: ", token_info)
+    st.write("code: ", code)
+    spotify_client = Spotify(auth=token_info['access_token'])
+    current_user = spotify_client.current_user()  # Fetch user info
+    st.session_state.spotify_client = spotify_client
+    st.session_state.authenticated = True
+    st.session_state.user_id = current_user["id"]
+    
+    st.write("user_id: ", current_user)
 
-    # Check if the user is already authenticated
-    if st.session_state.authenticated:
-        st.success("Authenticated successfully!")
-        return st.session_state.spotify_client
+    # Display the authorization URL
+    auth_url = sp_oauth.get_authorize_url()
+    st.write("Please authenticate with Spotify:")
+    st.markdown(f"[Click here to authenticate]({auth_url})", unsafe_allow_html=True)
 
-    # Check for cached token
-    token_info = sp_oauth.get_cached_token()
-    # token_info=False
+    st.write("Current Query Parameters:", st.query_params)
 
-    if token_info:
-        return Spotify(auth=token_info['access_token'])  
 
-    elif not token_info:
-        # Display the authorization URL for the user
-        auth_url = sp_oauth.get_authorize_url()
-        st.write("Please authenticate with Spotify:")
-        # st.write(auth_url) ## Debug
-        st.markdown(f"[Click here to authenticate]({auth_url})", unsafe_allow_html=True)
+    # Extract 'code' from query parameters
+    code = st.query_params.get("code")
+    st.write("code: ", code)
+    token_info = sp_oauth.get_access_token(code)
+    st.write("token_info: ", token_info)
+    st.write("code: ", code)
+    spotify_client = Spotify(auth=token_info['access_token'])
+    current_user = spotify_client.current_user()  # Fetch user info
+    st.session_state.spotify_client = spotify_client
+    st.session_state.authenticated = True
+    st.session_state.user_id = current_user["id"]
+    
+    st.write("user_id: ", current_user)
 
-        # Extract the 'code' parameter from the URL
-        code = st.query_params.get("code")
 
-        if code:
+    if code:
+        try:
             # Exchange the authorization code for an access token
-            # st.write("code", code) ## Debug
-            token_info = sp_oauth.get_access_token(code)
+            st.write("code: ", code)
+            st.write("code 0: ", code[0])
+            token_info = sp_oauth.get_access_token()
+            st.write("token_info: ", token_info)
+
+            # st.experimental_set_query_params()  # Clear the query parameters
             if token_info:
-                st.success("Authenticated successfully!")
+                spotify_client = Spotify(auth=token_info['refresh_token'])
+                current_user = spotify_client.current_user()  # Fetch user info
+                st.session_state.spotify_client = spotify_client
                 st.session_state.authenticated = True
-                st.session_state.spotify_client = Spotify(auth=token_info['access_token'])
-                return st.session_state.spotify_client
+                st.session_state.user_id = current_user["id"]
+
+                # Debug user info
+                st.write("Authenticated User Info:", current_user)
+                st.success("Authenticated successfully!")
+                return spotify_client
             else:
                 st.error("Failed to get access token.")
-        else:
-            st.info("Waiting for authentication...")
+        except Exception as e:
+            st.error(f"Error during authentication: {e}")
+    else:
+        st.info("Waiting for authentication...")
+
+
         
 
 
@@ -88,8 +124,9 @@ def handle_playlist_creation(spotify_client, track_uris):
     
     current_user = spotify_client.current_user()
     # st.write("Authenticated user info:", current_user) ## Debug
-    user_id = current_user["id"]
-    # st.write("user_id", user_id) ## Debug
+
+    user_id = st.session_state.user_id
+    # user_id = current_user["id"]
 
     # User input for the playlist name
     playlist_name = st.text_input("Enter a name for your playlist:")
