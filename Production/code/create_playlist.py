@@ -41,18 +41,6 @@ def get_spotify_client():
     # Extract 'code' from query parameters
     code = st.query_params.get("code")
 
-    # st.write("code: ", code)
-    # token_info = sp_oauth.get_access_token(code)
-    # st.write("token_info: ", token_info)
-    # st.write("code: ", code)
-    # spotify_client = Spotify(auth=token_info['access_token'])
-    # current_user = spotify_client.current_user()  # Fetch user info
-    # st.session_state.spotify_client = spotify_client
-    # st.session_state.authenticated = True
-    # st.session_state.user_id = current_user["id"]
-    
-    # st.write("user_id: ", current_user)
-
 
     if code:
         try:
@@ -60,9 +48,7 @@ def get_spotify_client():
             # st.write("code: ", code)
             # st.write("code 0: ", code[0])
             token_info = sp_oauth.get_access_token(code)
-            # st.write("token_info: ", token_info)
 
-            # st.experimental_set_query_params()  # Clear the query parameters
             if token_info:
                 spotify_client = Spotify(auth=token_info['access_token'])
                 current_user = spotify_client.current_user()  # Fetch user info
@@ -104,7 +90,7 @@ def handle_playlist_creation(spotify_client, track_uris):
         spotify_client: The Spotify client object for API requests.
         track_uris (list): A list of track URIs to be added to the playlist.
     """
-    # Get the current user's ID
+    # Get the current user's ID 
     
     current_user = spotify_client.current_user()
     # st.write("Authenticated user info:", current_user) ## Debug
