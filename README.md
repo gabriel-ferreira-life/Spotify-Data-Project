@@ -48,13 +48,18 @@ Ensure you have the following installed:
    ```
 
 3. Set up your Spotify Developer credentials:
+
    - Create an app on the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/).
-   - Add your **Client ID**, **Client Secret**, and **Redirect URI** to a `.env` file:
+   - Add your **Client ID**, **Client Secret**, and **Redirect URI** to a `.toml` file:
+     ```toml
+     [spotify]
+     client_id = "your_client_id"
+     client_secret = "your_client_secret"
+     redirect_uri = "your_redirect_uri"
      ```
-     SPOTIPY_CLIENT_ID=your_client_id
-     SPOTIPY_CLIENT_SECRET=your_client_secret
-     SPOTIPY_REDIRECT_URI=your_redirect_uri
-     ```
+   - Place this `.toml` file in a `.streamlit` folder at the root of your project.
+   - Make sure to include `.streamlit/secrets.toml` in your `.gitignore` file to keep it secure.
+
 
 ---
 
