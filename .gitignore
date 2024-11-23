@@ -1,1 +1,3 @@
 .DS_Store
+.streamlit
+spotify_songs.csv
