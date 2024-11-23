@@ -5,6 +5,13 @@ This project is a personalized music recommendation system that integrates machi
 
 ---
 
+## Full Report
+
+For a detailed breakdown of this project, please refer to the full report in this [PDF file](Report/SimplyFy_Report.pdf).\
+Video Presentation: https://www.youtube.com/watch?v=biaQ1d6yNmo
+
+---
+
 ## Features
 
 - **Integration with Spotify API**  
@@ -88,9 +95,3 @@ Ensure you have the following installed:
 - **API Client**: Spotipy
 - **Machine for Recommendation**: Pre-trained clustering and similarity models
 - **Deployment**: Streamlit Cloud
-
----
-
-## Full Report
-
-For a detailed breakdown of this project, please refer to the full report in this [PDF file](Report/SimplyFy_Report.pdf).
