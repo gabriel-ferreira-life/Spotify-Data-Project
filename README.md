@@ -88,4 +88,4 @@ Ensure you have the following installed:
 
 ## Full Report
 
-For a detailed breakdown of this project, please refer to the full report in the [PDF](Report/SimplyFy_Report.pdf).
+For a detailed breakdown of this project, please refer to the full report in this [PDF file](Report/SimplyFy_Report.pdf).
